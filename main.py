@@ -4,6 +4,20 @@ from random import randint
 init()
 
 W, H = 500, 700
+FPS = 60
+
+
+mixer.init()
+mixer.music.load("sounds/space.ogg")
+mixer.music.set_volume(0.5)
+mixer.music.play()
+
+shoot_snd = mixer.Sound('sounds/fire.ogg')
+
+font.init()
+font1 = font.SysFont('fonts/Bebas_Neue_Cyrillic.ttf', 35, bold=True)
+font2 = font.SysFont('fonts/Bebas_Neue_Cyrillic.ttf', 100, bold=True)
+
 
 window = display.set_mode((W, H))
 display.set_caption("Shooter")
@@ -91,6 +105,7 @@ while game:
             game = False
         if e.type == KEYDOWN:
             if e.key == K_SPACE:
+                shoot_snd.play()
                 player.shoot()
 
     window.blit(bg, (0, 0))
@@ -104,26 +119,40 @@ while game:
 
     bullets.draw(window)
     bullets.update()
-
+    # зіткнення куль з ворогами
     if sprite.groupcollide(bullets, enemies, True, True):
         kill += 1
         enemy = Enemy(randint(0, W - 70), randint(-35, 10), 70, 35, randint(2, 4), 'images/ufo.png')
         enemies.add(enemy)
-
+    # зіткнення куль з астеройдами
     if sprite.groupcollide(bullets, asteroids, True, False):
         pass
-
+    # зіткнення гравйця з астройдами
     if sprite.spritecollide(player, asteroids, True):
         life -= 1
         asteroid = Asteroid(randint(0, W - 70), randint(-35, 10), 70, 35, randint(2, 4), 'images/asteroid.png')
         asteroids.add(asteroid)
-
+    # зіткнення гравця з ворогами
     if sprite.spritecollide(player, enemies, True):
         life -= 1
         enemy = Enemy(randint(0, W - 70), randint(-35, 10), 70, 35, randint(2, 4), 'images/ufo.png')
         enemies.add(enemy)
 
     if life < 0:
-        game = False
+        game = False  
+
+    skipped_txt = font1.render(f'Пропущено: {skipped}',True, (255, 255, 255))
+    window.blit(skipped_txt, (10, 10))
+
+    killed_txt = font1.render(f'Вбито: {kill}', True, (255, 255, 255))
+    window.blit(killed_txt, (10, 40))
+
+    life_txt = font2.render(str(life), True, (0, 255, 0))
+    window.blit(life_txt, (450, 5))
+
+     
+
+
+
     display.update()
-    clock.tick(60)
+    clock.tick(FPS)
